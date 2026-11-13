@@ -1,0 +1,110 @@
+@startuml
+hide circle
+skinparam classAttributeIconSize 0
+
+enum StatutReservation {
+  EN_ATTENTE
+  VALIDEE
+  PAYEE
+  ANNULEE
+}
+
+enum StatutPaiement {
+  ENREGISTRE
+  REMBOURSE
+}
+
+class Passager {
+  - id : string
+  - nom : string
+  - prenom : string
+  - telephone : string
+  - email : string
+  + Passager(id, nom, prenom, telephone, email)
+  + getId() : string
+  + afficher() : void
+}
+
+class Vol {
+  - id : string
+  - origine : string
+  - destination : string
+  - dateHeure : string
+  - capacite : size_t
+  + Vol(id, origine, destination, dateHeure, capacite)
+  + getId() : string
+  + placesOccupees(reservations) : size_t
+  + placesDisponibles(reservations) : size_t
+  + afficher(reservations) : void
+}
+
+class Reservation {
+  - id : string
+  - passagerId : string
+  - volId : string
+  - statut : StatutReservation
+  + Reservation(id, passagerId, volId)
+  + getId() : string
+  + getPassagerId() : string
+  + getVolId() : string
+  + getStatut() : StatutReservation
+  + occupeUnePlace() : bool
+  + valider() : bool
+  + marquerPayee() : bool
+  + annuler() : bool
+  + afficher() : void
+}
+
+class Paiement {
+  - id : string
+  - reservationId : string
+  - montant : double
+  - date : string
+  - statut : StatutPaiement
+  + Paiement(id, reservationId, montant, date)
+  + getReservationId() : string
+  + enregistrer() : bool
+  + rembourser() : bool
+  + afficher() : void
+}
+
+class Agence {
+  - passagers : vector<Passager>
+  - vols : vector<Vol>
+  - reservations : vector<Reservation>
+  - paiements : vector<Paiement>
+  - prochainPaiement : int
+  + ajouterPassager(passager) : bool
+  + ajouterVol(vol) : bool
+  + creerReservation(reservationId, passagerId, volId) : bool
+  + validerReservation(reservationId) : bool
+  + enregistrerPaiement(reservationId, montant, date) : bool
+  + annulerReservation(reservationId) : bool
+  + afficherVolsDisponibles() : void
+  + rechercherVol(volId) : bool
+  + consulterReservations() : void
+  + afficherReservation(reservationId) : void
+}
+
+Agence "1" o-- "0..*" Passager : conserve
+Agence "1" o-- "0..*" Vol : conserve
+Agence "1" o-- "0..*" Reservation : gère
+Agence "1" o-- "0..*" Paiement : conserve
+
+Passager "1" -- "0..*" Reservation : effectue
+Vol "1" -- "0..*" Reservation : concerne
+Reservation "1" -- "0..1" Paiement : reçoit
+
+note right of Reservation
+EN_ATTENTE : ne bloque pas de place
+VALIDEE ou PAYEE : bloque une place
+ANNULEE : ne bloque plus de place
+end note
+
+note right of Paiement
+L'agence vérifie la réservation avant
+d'appeler enregistr().
+L'annulation d'une réservation payée
+appelle rembourser().
+end note
+@enduml
